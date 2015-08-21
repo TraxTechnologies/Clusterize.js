@@ -112,9 +112,12 @@
       off('scroll', self.scroll_elem, scrollEv);
       off('resize', window, resizeEv);
       self.html((clean ? self.generateEmptyRow() : rows).join(''));
+      trigger('clusterize.destroy', self.content_elem);
     }
     self.refresh = function() {
       self.getRowsHeight(rows) && self.update(rows);
+      trigger('clusterize.refresh', self.content_elem);
+
     }
     self.update = function(new_rows) {
       rows = isArray(new_rows)
@@ -255,6 +258,7 @@
         this.html(outer_data);
         this.options.content_tag == 'ol' && this.content_elem.setAttribute('start', data.rows_above);
       }
+      trigger('clusterize.insert', this.content_elem);
     },
     // unfortunately ie <= 9 does not allow to use innerHTML for table elements, so make a workaround
     html: function(data) {
@@ -286,6 +290,16 @@
         changed = current_data !== cache.data;
       return changed && (cache.data = current_data);
     }
+  }
+
+  function trigger(evt, element) {
+    if (typeof CustomEvent === 'function') {
+      var event = new CustomEvent(evt, {bubbles: true, cancelable: true});
+    } else {
+      var event = document.createEvent('Event');
+      event.initEvent(evt, true, true);
+    }
+     element.dispatchEvent(event);
   }
 
   // support functions
